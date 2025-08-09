@@ -13,11 +13,11 @@ import (
 
 // PGRepo - структура для базы данных
 type PGRepo struct {
-	Conn *pgx.Conn
+	conn *pgx.Conn // соединение с бд
 }
 
 // ConnectDB производит соединение с бд
-func (repo *PGRepo) ConnectDB(dbHost string, dbUser string, dbPassword string, dbName string, dbPort int) error {
+func (repo *PGRepo) ConnectDB(ctx context.Context, dbHost string, dbUser string, dbPassword string, dbName string, dbPort int) error {
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%d/%s",
 		dbUser,
@@ -27,23 +27,24 @@ func (repo *PGRepo) ConnectDB(dbHost string, dbUser string, dbPassword string, d
 		dbName,
 	)
 
-	conn, err := pgx.Connect(context.Background(), dsn)
+	conn, err := pgx.Connect(ctx, dsn)
 	if err != nil {
 		return fmt.Errorf("unable to connect to database: %w", err)
 	}
 
-	repo.Conn = conn
+	repo.conn = conn
 
 	return nil
 }
 
-func (repo *PGRepo) CreateSubscription(s *entity.Subscription) (int64, error) {
+// CreateSubscription добавляет подписку в бд и возвращает id
+func (repo *PGRepo) CreateSubscription(ctx context.Context, s *entity.Subscription) (int64, error) {
 	if s == nil {
 		return 0, fmt.Errorf("invalid argument error")
 	}
 
 	var id int64
-	err := repo.Conn.QueryRow(context.Background(),
+	err := repo.conn.QueryRow(ctx,
 		`INSERT INTO subscriptions (service_name, price, user_id, start_date, end_date)
              VALUES ($1, $2, $3, $4, $5)
              RETURNING id`,
@@ -55,8 +56,9 @@ func (repo *PGRepo) CreateSubscription(s *entity.Subscription) (int64, error) {
 	return id, nil
 }
 
-func (repo *PGRepo) ReadSubscription(id int64) (*entity.Subscription, error) {
-	row := repo.Conn.QueryRow(context.Background(),
+// ReadSubscription возвращает подписку по id
+func (repo *PGRepo) ReadSubscription(ctx context.Context, id int64) (*entity.Subscription, error) {
+	row := repo.conn.QueryRow(ctx,
 		`SELECT id, service_name, price, user_id, start_date, end_date FROM subscriptions WHERE id = $1`, id)
 
 	var s entity.Subscription
@@ -71,7 +73,8 @@ func (repo *PGRepo) ReadSubscription(id int64) (*entity.Subscription, error) {
 	return &s, nil
 }
 
-func (repo *PGRepo) UpdateSubscription(s *entity.Subscription) error {
+// UpdateSubscription обновляет данные подписки
+func (repo *PGRepo) UpdateSubscription(ctx context.Context, s *entity.Subscription) error {
 	if s == nil {
 		return fmt.Errorf("invalid argument error: subscription is nil")
 	}
@@ -80,7 +83,7 @@ func (repo *PGRepo) UpdateSubscription(s *entity.Subscription) error {
 		return fmt.Errorf("invalid argument error: missing subscription ID")
 	}
 
-	cmdTag, err := repo.Conn.Exec(context.Background(),
+	cmdTag, err := repo.conn.Exec(ctx,
 		`UPDATE subscriptions SET service_name = $1, price = $2, user_id = $3, start_date = $4, end_date = $5 WHERE id = $6`,
 		s.ServiceName, s.Price, s.UserId, s.StartDate, s.EndDate, s.Id,
 	)
@@ -95,8 +98,9 @@ func (repo *PGRepo) UpdateSubscription(s *entity.Subscription) error {
 	return nil
 }
 
-func (repo *PGRepo) DeleteSubscription(id int64) error {
-	cmdTag, err := repo.Conn.Exec(context.Background(),
+// DeleteSubscription удаляет подписку
+func (repo *PGRepo) DeleteSubscription(ctx context.Context, id int64) error {
+	cmdTag, err := repo.conn.Exec(ctx,
 		`DELETE FROM subscriptions WHERE id = $1`, id)
 	if err != nil {
 		return err
@@ -109,8 +113,9 @@ func (repo *PGRepo) DeleteSubscription(id int64) error {
 	return nil
 }
 
-func (repo *PGRepo) ListSubscriptions() ([]*entity.Subscription, error) {
-	rows, err := repo.Conn.Query(context.Background(),
+// ListSubscriptions возвращает список всех подписок
+func (repo *PGRepo) ListSubscriptions(ctx context.Context) ([]*entity.Subscription, error) {
+	rows, err := repo.conn.Query(ctx,
 		`SELECT id, service_name, price, user_id, start_date, end_date FROM subscriptions`)
 	if err != nil {
 		return nil, err
@@ -129,7 +134,8 @@ func (repo *PGRepo) ListSubscriptions() ([]*entity.Subscription, error) {
 	return subs, nil
 }
 
-func (repo *PGRepo) TotalCost(from, to time.Time, userID *uuid.UUID, serviceName *string) (int, error) {
+// TotalCost возвращает суммарную стоимость подписок за определенный период с фильтрацией по id пользователя и/или названию сервиса
+func (repo *PGRepo) TotalCost(ctx context.Context, from, to time.Time, userID *uuid.UUID, serviceName *string) (int, error) {
 	var total int
 	query := `
 		SELECT COALESCE(SUM(price), 0)
@@ -146,12 +152,27 @@ func (repo *PGRepo) TotalCost(from, to time.Time, userID *uuid.UUID, serviceName
 	}
 
 	if serviceName != nil {
-		query += ` AND service_name = $4`
-		args = append(args, *serviceName)
+		if userID == nil {
+			query += ` AND service_name = $3`
+			args = append(args, *serviceName)
+		} else {
+			query += ` AND service_name = $4`
+			args = append(args, *serviceName)
+		}
 	}
 
 	fmt.Println(args)
 
-	err := repo.Conn.QueryRow(context.Background(), query, args...).Scan(&total)
+	err := repo.conn.QueryRow(ctx, query, args...).Scan(&total)
 	return total, err
+}
+
+// Close закрывает соединение с бд
+func (repo *PGRepo) Close(ctx context.Context) error {
+	err := repo.conn.Close(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

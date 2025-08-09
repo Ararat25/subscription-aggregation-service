@@ -8,12 +8,12 @@ import (
 
 // ErrorResponse описывает структуру ответа с ошибкой
 type ErrorResponse struct {
-	Error string `json:"error" example:"error message"`
+	Error string `json:"error" example:"error message"` // строка для сообщения об ошибке
 }
 
 // StatusResponse описывает структуру ответа со статусом
 type StatusResponse struct {
-	Status string `json:"status" example:"ok"`
+	Status string `json:"status" example:"ok"` // статус ответа
 }
 
 // sendSuccess отправляет успешный JSON-ответ с указанным статусом

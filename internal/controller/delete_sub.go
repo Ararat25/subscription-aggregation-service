@@ -6,6 +6,15 @@ import (
 	"strconv"
 )
 
+// DeleteSubscription godoc
+// @Summary Удалить подписку
+// @Description Удаляет подписку по её идентификатору
+// @Tags subscriptions
+// @Produce json
+// @Param id path int true "ID подписки"
+// @Success 200 {object} StatusResponse "Статус выполнения"
+// @Failure 400 {object} map[string]string "Некорректный ID или ошибка удаления"
+// @Router /subscription/delete/{id} [delete]
 func (h *Handler) DeleteSubscription(w http.ResponseWriter, r *http.Request) {
 	idString := chi.URLParam(r, "id")
 
@@ -20,7 +29,8 @@ func (h *Handler) DeleteSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.aggregationService.DeleteSubscription(id)
+	ctx := r.Context()
+	err = h.aggregationService.DeleteSubscription(ctx, id)
 	if err != nil {
 		sendError(w, err.Error(), http.StatusBadRequest)
 		return

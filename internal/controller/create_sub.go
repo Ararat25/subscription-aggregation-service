@@ -7,6 +7,17 @@ import (
 	"net/http"
 )
 
+// CreateSubscription godoc
+// @Summary Создать новую подписку
+// @Description Добавляет новую подписку в систему
+// @Tags subscriptions
+// @Accept json
+// @Produce json
+// @Param subscription body entity.SubscriptionRequest true "Данные подписки"
+// @Success 200 {object} map[string]int64 "ID созданной подписки"
+// @Failure 400 {object} map[string]string "Некорректные данные"
+// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
+// @Router /subscription [post]
 func (h *Handler) CreateSubscription(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer
 	_, err := buf.ReadFrom(r.Body)
@@ -22,7 +33,8 @@ func (h *Handler) CreateSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.aggregationService.CreateSubscription(newSub)
+	ctx := r.Context()
+	id, err := h.aggregationService.CreateSubscription(ctx, newSub)
 	if err != nil {
 		sendError(w, err.Error(), http.StatusInternalServerError)
 		return

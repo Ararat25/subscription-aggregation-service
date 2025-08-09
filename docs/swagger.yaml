@@ -1,9 +1,244 @@
-basePath: /
-host: localhost:8080
+basePath: /api/v1
+definitions:
+  controller.StatusResponse:
+    properties:
+      status:
+        description: статус ответа
+        example: ok
+        type: string
+    type: object
+  entity.Subscription:
+    properties:
+      end_date:
+        description: дата окончания подписки (месяц и год)
+        type: string
+      price:
+        description: стоимость месячной подписки в рублях
+        type: integer
+      service_name:
+        description: название сервиса, предоставляющего подписку
+        type: string
+      start_date:
+        description: дата начала подписки (месяц и год)
+        type: string
+      user_id:
+        description: id пользователя в формате UUID
+        type: string
+    type: object
+  entity.SubscriptionRequest:
+    properties:
+      end_date:
+        description: дата окончания подписки (месяц и год)
+        type: string
+      id:
+        description: id подписки в бд
+        type: integer
+      price:
+        description: стоимость месячной подписки в рублях
+        type: integer
+      service_name:
+        description: название сервиса, предоставляющего подписку
+        type: string
+      start_date:
+        description: дата начала подписки (месяц и год)
+        type: string
+      user_id:
+        description: id пользователя в формате UUID
+        type: string
+    type: object
 info:
   contact: {}
-  description: This is
+  description: API для управления подписками и расчета их стоимости.
   title: Subscription aggregation service API
   version: "1.0"
-paths: {}
+paths:
+  /subscription:
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новую подписку в систему
+      parameters:
+      - description: Данные подписки
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/entity.SubscriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ID созданной подписки
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Некорректные данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Создать новую подписку
+      tags:
+      - subscriptions
+  /subscription/{id}:
+    get:
+      description: Возвращает данные подписки по её идентификатору
+      parameters:
+      - description: ID подписки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация о подписке
+          schema:
+            $ref: '#/definitions/entity.Subscription'
+        "400":
+          description: Неверный параметр id или ошибка получения данных
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить подписку по ID
+      tags:
+      - subscriptions
+  /subscription/delete/{id}:
+    delete:
+      description: Удаляет подписку по её идентификатору
+      parameters:
+      - description: ID подписки
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Статус выполнения
+          schema:
+            $ref: '#/definitions/controller.StatusResponse'
+        "400":
+          description: Некорректный ID или ошибка удаления
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить подписку
+      tags:
+      - subscriptions
+  /subscription/update:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные существующей подписки
+      parameters:
+      - description: Данные подписки
+        in: body
+        name: subscription
+        required: true
+        schema:
+          $ref: '#/definitions/entity.SubscriptionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            $ref: '#/definitions/controller.StatusResponse'
+        "400":
+          description: Неверные данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить подписку
+      tags:
+      - subscriptions
+  /subscriptions:
+    get:
+      description: Возвращает полный список всех подписок
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список подписок
+          schema:
+            items:
+              $ref: '#/definitions/entity.Subscription'
+            type: array
+        "500":
+          description: Ошибка получения данных
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить список подписок
+      tags:
+      - subscriptions
+  /subscriptions/cost:
+    get:
+      description: Возвращает суммарную стоимость подписок за указанный период с возможной
+        фильтрацией по id пользователя и названию сервиса
+      parameters:
+      - description: Дата начала периода (формат MM-YYYY)
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: Дата конца периода (формат MM-YYYY)
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: UUID пользователя
+        in: query
+        name: id
+        type: string
+      - description: Название сервиса
+        in: query
+        name: service_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Общая стоимость
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить общую стоимость подписок
+      tags:
+      - subscriptions
 swagger: "2.0"

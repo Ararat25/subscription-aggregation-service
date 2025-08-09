@@ -6,6 +6,15 @@ import (
 	"strconv"
 )
 
+// ReadSubscription godoc
+// @Summary Получить подписку по ID
+// @Description Возвращает данные подписки по её идентификатору
+// @Tags subscriptions
+// @Produce json
+// @Param id path int true "ID подписки"
+// @Success 200 {object} entity.Subscription "Информация о подписке"
+// @Failure 400 {object} map[string]string "Неверный параметр id или ошибка получения данных"
+// @Router /subscription/{id} [get]
 func (h *Handler) ReadSubscription(w http.ResponseWriter, r *http.Request) {
 	idString := chi.URLParam(r, "id")
 
@@ -20,7 +29,8 @@ func (h *Handler) ReadSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	subscription, err := h.aggregationService.ReadSubscription(id)
+	ctx := r.Context()
+	subscription, err := h.aggregationService.ReadSubscription(ctx, id)
 	if err != nil {
 		sendError(w, err.Error(), http.StatusBadRequest)
 		return

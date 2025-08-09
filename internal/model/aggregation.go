@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -9,11 +10,11 @@ import (
 	"github.com/google/uuid"
 )
 
-const DateLayout = "01-2006"
+const DateLayout = "01-2006" // шаблон для преобразования дат из строки в объект
 
 // AggregationService - структура для сервиса агрегации
 type AggregationService struct {
-	Storage repository.Repo
+	Storage repository.Repo // объект для работы с бд
 }
 
 // NewAggregationService возвращает новый объект структуры Service
@@ -23,7 +24,8 @@ func NewAggregationService(storage repository.Repo) *AggregationService {
 	}
 }
 
-func (ags *AggregationService) CreateSubscription(s *entity.SubscriptionRequest) (int64, error) {
+// CreateSubscription добавляет подписку в бд и возвращает id
+func (ags *AggregationService) CreateSubscription(ctx context.Context, s *entity.SubscriptionRequest) (int64, error) {
 	if s == nil {
 		return 0, fmt.Errorf("invalid argument error")
 	}
@@ -33,7 +35,7 @@ func (ags *AggregationService) CreateSubscription(s *entity.SubscriptionRequest)
 		return 0, err
 	}
 
-	id, err := ags.Storage.CreateSubscription(subNew)
+	id, err := ags.Storage.CreateSubscription(ctx, subNew)
 	if err != nil {
 		return 0, err
 	}
@@ -41,8 +43,9 @@ func (ags *AggregationService) CreateSubscription(s *entity.SubscriptionRequest)
 	return id, nil
 }
 
-func (ags *AggregationService) ReadSubscription(id int64) (*entity.Subscription, error) {
-	sub, err := ags.Storage.ReadSubscription(id)
+// ReadSubscription возвращает подписку из бд по id
+func (ags *AggregationService) ReadSubscription(ctx context.Context, id int64) (*entity.Subscription, error) {
+	sub, err := ags.Storage.ReadSubscription(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +53,8 @@ func (ags *AggregationService) ReadSubscription(id int64) (*entity.Subscription,
 	return sub, nil
 }
 
-func (ags *AggregationService) UpdateSubscription(s *entity.SubscriptionRequest) error {
+// UpdateSubscription обновляет данные подписки в бд
+func (ags *AggregationService) UpdateSubscription(ctx context.Context, s *entity.SubscriptionRequest) error {
 	if s == nil {
 		return fmt.Errorf("invalid argument error")
 	}
@@ -60,7 +64,7 @@ func (ags *AggregationService) UpdateSubscription(s *entity.SubscriptionRequest)
 		return err
 	}
 
-	err = ags.Storage.UpdateSubscription(subNew)
+	err = ags.Storage.UpdateSubscription(ctx, subNew)
 	if err != nil {
 		return err
 	}
@@ -68,8 +72,9 @@ func (ags *AggregationService) UpdateSubscription(s *entity.SubscriptionRequest)
 	return nil
 }
 
-func (ags *AggregationService) DeleteSubscription(id int64) error {
-	err := ags.Storage.DeleteSubscription(id)
+// DeleteSubscription удаляет подписку из бд
+func (ags *AggregationService) DeleteSubscription(ctx context.Context, id int64) error {
+	err := ags.Storage.DeleteSubscription(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -77,8 +82,9 @@ func (ags *AggregationService) DeleteSubscription(id int64) error {
 	return nil
 }
 
-func (ags *AggregationService) ListSubscriptions() ([]*entity.Subscription, error) {
-	subs, err := ags.Storage.ListSubscriptions()
+// ListSubscriptions возвращает список всех подписок из бд
+func (ags *AggregationService) ListSubscriptions(ctx context.Context) ([]*entity.Subscription, error) {
+	subs, err := ags.Storage.ListSubscriptions(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +92,9 @@ func (ags *AggregationService) ListSubscriptions() ([]*entity.Subscription, erro
 	return subs, nil
 }
 
-func (ags *AggregationService) TotalCost(from, to time.Time, userID *uuid.UUID, serviceName *string) (int, error) {
-	cost, err := ags.Storage.TotalCost(resetDay(from), resetDay(to), userID, serviceName)
+// TotalCost возвращает суммарную стоимость подписок за определенный период с фильтрацией по id пользователя и названию сервиса
+func (ags *AggregationService) TotalCost(ctx context.Context, from, to time.Time, userID *uuid.UUID, serviceName *string) (int, error) {
+	cost, err := ags.Storage.TotalCost(ctx, resetDay(from), resetDay(to), userID, serviceName)
 	if err != nil {
 		return 0, err
 	}
@@ -95,10 +102,12 @@ func (ags *AggregationService) TotalCost(from, to time.Time, userID *uuid.UUID, 
 	return cost, nil
 }
 
+// resetDay обнуляет день
 func resetDay(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
 }
 
+// convertStringDateToTime преобразует даты в подписке из строки в time.Time
 func convertStringDateToTime(s *entity.SubscriptionRequest) (*entity.Subscription, error) {
 	subNew := &entity.Subscription{
 		ServiceName: s.ServiceName,

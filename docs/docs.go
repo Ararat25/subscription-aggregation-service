@@ -14,17 +14,369 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/subscription": {
+            "post": {
+                "description": "Добавляет новую подписку в систему",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Создать новую подписку",
+                "parameters": [
+                    {
+                        "description": "Данные подписки",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.SubscriptionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ID созданной подписки",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer",
+                                "format": "int64"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректные данные",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subscription/delete/{id}": {
+            "delete": {
+                "description": "Удаляет подписку по её идентификатору",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Удалить подписку",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID подписки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статус выполнения",
+                        "schema": {
+                            "$ref": "#/definitions/controller.StatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Некорректный ID или ошибка удаления",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subscription/update": {
+            "put": {
+                "description": "Обновляет данные существующей подписки",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Обновить подписку",
+                "parameters": [
+                    {
+                        "description": "Данные подписки",
+                        "name": "subscription",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.SubscriptionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление",
+                        "schema": {
+                            "$ref": "#/definitions/controller.StatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные данные",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subscription/{id}": {
+            "get": {
+                "description": "Возвращает данные подписки по её идентификатору",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Получить подписку по ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID подписки",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Информация о подписке",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Subscription"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный параметр id или ошибка получения данных",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subscriptions": {
+            "get": {
+                "description": "Возвращает полный список всех подписок",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Получить список подписок",
+                "responses": {
+                    "200": {
+                        "description": "Список подписок",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Subscription"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка получения данных",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subscriptions/cost": {
+            "get": {
+                "description": "Возвращает суммарную стоимость подписок за указанный период с возможной фильтрацией по id пользователя и названию сервиса",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Получить общую стоимость подписок",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Дата начала периода (формат MM-YYYY)",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Дата конца периода (формат MM-YYYY)",
+                        "name": "to",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UUID пользователя",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Название сервиса",
+                        "name": "service_name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Общая стоимость",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные параметры запроса",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "controller.StatusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "description": "статус ответа",
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "entity.Subscription": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "description": "дата окончания подписки (месяц и год)",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "стоимость месячной подписки в рублях",
+                    "type": "integer"
+                },
+                "service_name": {
+                    "description": "название сервиса, предоставляющего подписку",
+                    "type": "string"
+                },
+                "start_date": {
+                    "description": "дата начала подписки (месяц и год)",
+                    "type": "string"
+                },
+                "user_id": {
+                    "description": "id пользователя в формате UUID",
+                    "type": "string"
+                }
+            }
+        },
+        "entity.SubscriptionRequest": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "description": "дата окончания подписки (месяц и год)",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "id подписки в бд",
+                    "type": "integer"
+                },
+                "price": {
+                    "description": "стоимость месячной подписки в рублях",
+                    "type": "integer"
+                },
+                "service_name": {
+                    "description": "название сервиса, предоставляющего подписку",
+                    "type": "string"
+                },
+                "start_date": {
+                    "description": "дата начала подписки (месяц и год)",
+                    "type": "string"
+                },
+                "user_id": {
+                    "description": "id пользователя в формате UUID",
+                    "type": "string"
+                }
+            }
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/",
+	Host:             "",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Subscription aggregation service API",
-	Description:      "This is",
+	Description:      "API для управления подписками и расчета их стоимости.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

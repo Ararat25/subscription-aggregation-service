@@ -8,6 +8,19 @@ import (
 	"time"
 )
 
+// TotalCost godoc
+// @Summary Получить общую стоимость подписок
+// @Description Возвращает суммарную стоимость подписок за указанный период с возможной фильтрацией по id пользователя и названию сервиса
+// @Tags subscriptions
+// @Produce json
+// @Param from query string true "Дата начала периода (формат MM-YYYY)"
+// @Param to query string true "Дата конца периода (формат MM-YYYY)"
+// @Param id query string false "UUID пользователя"
+// @Param service_name query string false "Название сервиса"
+// @Success 200 {object} map[string]int "Общая стоимость"
+// @Failure 400 {object} map[string]string "Неверные параметры запроса"
+// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
+// @Router /subscriptions/cost [get]
 func (h *Handler) TotalCost(w http.ResponseWriter, r *http.Request) {
 	fromStr := r.URL.Query().Get("from")
 	toStr := r.URL.Query().Get("to")
@@ -46,7 +59,8 @@ func (h *Handler) TotalCost(w http.ResponseWriter, r *http.Request) {
 		id = &parsedID
 	}
 
-	cost, err := h.aggregationService.TotalCost(from, to, id, serviceName)
+	ctx := r.Context()
+	cost, err := h.aggregationService.TotalCost(ctx, from, to, id, serviceName)
 	if err != nil {
 		sendError(w, err.Error(), http.StatusInternalServerError)
 		return

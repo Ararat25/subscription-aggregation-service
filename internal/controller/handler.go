@@ -6,7 +6,7 @@ import (
 
 // Handler структура для обработчиков запросов
 type Handler struct {
-	aggregationService *model.AggregationService
+	aggregationService *model.AggregationService // объект для работы с сервисом агрегации подписок
 }
 
 // NewHandler создает новый объект Handler
