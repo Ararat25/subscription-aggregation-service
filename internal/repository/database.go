@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
+
 	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"time"
 )
 
 // PGRepo - структура для базы данных
@@ -35,13 +37,22 @@ func (repo *PGRepo) ConnectDB(dbHost string, dbUser string, dbPassword string, d
 	return nil
 }
 
-func (repo *PGRepo) CreateSubscription(s *entity.Subscription) error {
-	_, err := repo.Conn.Exec(context.Background(),
+func (repo *PGRepo) CreateSubscription(s *entity.Subscription) (int64, error) {
+	if s == nil {
+		return 0, fmt.Errorf("invalid argument error")
+	}
+
+	var id int64
+	err := repo.Conn.QueryRow(context.Background(),
 		`INSERT INTO subscriptions (service_name, price, user_id, start_date, end_date)
-		 VALUES ($1, $2, $3, $4, $5)`,
-		s.ServiceName, s.Price, s.UserId, s.StartDate, s.EndDate,
-	)
-	return err
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING id`,
+		s.ServiceName, s.Price, s.UserId, s.StartDate, s.EndDate).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
 }
 
 func (repo *PGRepo) ReadSubscription(id int64) (*entity.Subscription, error) {
@@ -51,23 +62,51 @@ func (repo *PGRepo) ReadSubscription(id int64) (*entity.Subscription, error) {
 	var s entity.Subscription
 	err := row.Scan(&s.Id, &s.ServiceName, &s.Price, &s.UserId, &s.StartDate, &s.EndDate)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("subscription with id %d not found", id)
+		}
 		return nil, err
 	}
+
 	return &s, nil
 }
 
 func (repo *PGRepo) UpdateSubscription(s *entity.Subscription) error {
-	_, err := repo.Conn.Exec(context.Background(),
+	if s == nil {
+		return fmt.Errorf("invalid argument error: subscription is nil")
+	}
+
+	if s.Id == 0 {
+		return fmt.Errorf("invalid argument error: missing subscription ID")
+	}
+
+	cmdTag, err := repo.Conn.Exec(context.Background(),
 		`UPDATE subscriptions SET service_name = $1, price = $2, user_id = $3, start_date = $4, end_date = $5 WHERE id = $6`,
 		s.ServiceName, s.Price, s.UserId, s.StartDate, s.EndDate, s.Id,
 	)
-	return err
+	if err != nil {
+		return err
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("no subscription found with id %d", s.Id)
+	}
+
+	return nil
 }
 
 func (repo *PGRepo) DeleteSubscription(id int64) error {
-	_, err := repo.Conn.Exec(context.Background(),
+	cmdTag, err := repo.Conn.Exec(context.Background(),
 		`DELETE FROM subscriptions WHERE id = $1`, id)
-	return err
+	if err != nil {
+		return err
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return fmt.Errorf("subscription with id %d not found", id)
+	}
+
+	return nil
 }
 
 func (repo *PGRepo) ListSubscriptions() ([]*entity.Subscription, error) {
@@ -80,12 +119,12 @@ func (repo *PGRepo) ListSubscriptions() ([]*entity.Subscription, error) {
 
 	var subs []*entity.Subscription
 	for rows.Next() {
-		var s *entity.Subscription
+		var s entity.Subscription
 		err = rows.Scan(&s.Id, &s.ServiceName, &s.Price, &s.UserId, &s.StartDate, &s.EndDate)
 		if err != nil {
 			return nil, err
 		}
-		subs = append(subs, s)
+		subs = append(subs, &s)
 	}
 	return subs, nil
 }

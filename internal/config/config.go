@@ -2,9 +2,9 @@ package config
 
 import (
 	"fmt"
-	"github.com/caarlos0/env/v6"
 	"time"
 
+	"github.com/caarlos0/env/v6"
 	"github.com/joho/godotenv"
 )
 

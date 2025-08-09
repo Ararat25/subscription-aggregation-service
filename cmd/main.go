@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
 	_ "github.com/Ararat25/subscription-aggregation-service/docs"
 	"github.com/Ararat25/subscription-aggregation-service/internal/config"
 	"github.com/Ararat25/subscription-aggregation-service/internal/controller"
@@ -11,8 +14,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"log"
-	"net/http"
 )
 
 // @title Subscription aggregation service API
@@ -71,7 +72,7 @@ func initRouter(handler *controller.Handler) *chi.Mux {
 	r.Put("/api/v1/subscription/update", handler.UpdateSubscription)
 	r.Delete("/api/v1/subscription/delete/{id}", handler.DeleteSubscription)
 	r.Get("/api/v1/subscriptions", handler.ListSubscriptions)
-	r.Get("/api/v1/subscriptions/cost/{id}", handler.ListSubscriptions)
+	r.Get("/api/v1/subscriptions/cost", handler.TotalCost)
 
 	return r
 }
