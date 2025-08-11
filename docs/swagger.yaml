@@ -59,6 +59,7 @@ definitions:
       price:
         description: стоимость месячной подписки в рублях
         example: 499
+        minimum: 1
         type: integer
       service_name:
         description: название сервиса, предоставляющего подписку
@@ -72,6 +73,11 @@ definitions:
         description: id пользователя в формате UUID
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
+    required:
+    - price
+    - service_name
+    - start_date
+    - user_id
     type: object
 info:
   contact: {}
@@ -195,7 +201,7 @@ paths:
           description: Список подписок
           schema:
             items:
-              $ref: '#/definitions/entity.Subscription'
+              $ref: '#/definitions/entity.SubscriptionRequest'
             type: array
         "500":
           description: Ошибка получения данных

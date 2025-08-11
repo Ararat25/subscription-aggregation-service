@@ -1,11 +1,11 @@
 package controller
 
 import (
+	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/Ararat25/subscription-aggregation-service/internal/model"
 	"github.com/google/uuid"
 )
 
@@ -36,13 +36,13 @@ func (h *Handler) TotalCost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	from, err := time.Parse(model.DateLayout, fromStr)
+	from, err := time.Parse(entity.DateLayout, fromStr)
 	if err != nil {
 		sendError(w, "invalid from parameter", http.StatusBadRequest)
 		return
 	}
 
-	to, err := time.Parse(model.DateLayout, toStr)
+	to, err := time.Parse(entity.DateLayout, toStr)
 	if err != nil {
 		sendError(w, "invalid to parameter", http.StatusBadRequest)
 		return

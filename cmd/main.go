@@ -37,7 +37,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("error init logger: %v\n", err)
 	}
-	defer logger.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			logger.Log.Error("failed to sync logger", zap.Error(err))
+		}
+	}()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -47,7 +51,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("error connecting to database: %v\n", err)
 	}
-	defer db.Close(ctx)
+	defer func() {
+		if err := db.Close(ctx); err != nil {
+			logger.Log.Error("failed to close db", zap.Error(err))
+		}
+	}()
+
 	logger.Log.Info("Successful connection to the database",
 		zap.String("host", conf.Database.Host),
 		zap.Int("port", conf.Database.Port),

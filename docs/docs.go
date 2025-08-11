@@ -193,7 +193,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.Subscription"
+                                "$ref": "#/definitions/entity.SubscriptionRequest"
                             }
                         }
                     },
@@ -335,6 +335,12 @@ const docTemplate = `{
         },
         "entity.SubscriptionRequest": {
             "type": "object",
+            "required": [
+                "price",
+                "service_name",
+                "start_date",
+                "user_id"
+            ],
             "properties": {
                 "end_date": {
                     "description": "дата окончания подписки (месяц и год)",
@@ -349,6 +355,7 @@ const docTemplate = `{
                 "price": {
                     "description": "стоимость месячной подписки в рублях",
                     "type": "integer",
+                    "minimum": 1,
                     "example": 499
                 },
                 "service_name": {

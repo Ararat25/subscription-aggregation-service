@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"net/http"
 	"strconv"
 
@@ -16,7 +17,7 @@ import (
 // @Tags subscriptions
 // @Produce json
 // @Param id path int true "ID подписки"
-// @Success 200 {object} entity.Subscription "Информация о подписке"
+// @Success 200 {object} entity.SubscriptionRequest "Информация о подписке"
 // @Failure 400 {object} ErrorResponse "Неверный параметр id или ошибка получения данных"
 // @Router /subscription/{id} [get]
 func (h *Handler) ReadSubscription(w http.ResponseWriter, r *http.Request) {
@@ -44,5 +45,7 @@ func (h *Handler) ReadSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendSuccess(w, subscription, http.StatusOK)
+	subResp := entity.ParseSubscriptionToRequest(subscription)
+
+	sendSuccess(w, subResp, http.StatusOK)
 }

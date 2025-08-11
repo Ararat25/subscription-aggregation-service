@@ -9,11 +9,11 @@ var validate = validator.New()
 
 // Handler структура для обработчиков запросов
 type Handler struct {
-	aggregationService *model.AggregationService // объект для работы с сервисом агрегации подписок
+	aggregationService model.Service // объект для работы с сервисом агрегации подписок
 }
 
 // NewHandler создает новый объект Handler
-func NewHandler(aggregationService *model.AggregationService) *Handler {
+func NewHandler(aggregationService model.Service) *Handler {
 	return &Handler{
 		aggregationService: aggregationService,
 	}

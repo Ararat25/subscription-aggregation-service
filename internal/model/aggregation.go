@@ -10,8 +10,6 @@ import (
 	"github.com/google/uuid"
 )
 
-const DateLayout = "01-2006" // шаблон для преобразования дат из строки в объект
-
 // AggregationService - структура для сервиса агрегации
 type AggregationService struct {
 	Storage repository.Repo // объект для работы с бд
@@ -35,7 +33,7 @@ func (ags *AggregationService) CreateSubscription(ctx context.Context, s *entity
 		return 0, err
 	}
 
-	if !isEndDateValid(subNew.StartDate, *subNew.EndDate) {
+	if subNew.EndDate != nil && !isEndDateValid(subNew.StartDate, *subNew.EndDate) {
 		return 0, fmt.Errorf("end_date must be >= start_date")
 	}
 
@@ -68,7 +66,7 @@ func (ags *AggregationService) UpdateSubscription(ctx context.Context, s *entity
 		return err
 	}
 
-	if !isEndDateValid(subNew.StartDate, *subNew.EndDate) {
+	if subNew.EndDate != nil && !isEndDateValid(subNew.StartDate, *subNew.EndDate) {
 		return fmt.Errorf("end_date must be >= start_date")
 	}
 
@@ -134,14 +132,14 @@ func convertStringDateToTime(s *entity.SubscriptionRequest) (*entity.Subscriptio
 		subNew.Id = s.Id
 	}
 
-	start, err := time.Parse(DateLayout, s.StartDate)
+	start, err := time.Parse(entity.DateLayout, s.StartDate)
 	if err != nil {
 		return nil, fmt.Errorf("invalid date format")
 	}
 
 	var end *time.Time
 	if s.EndDate != nil {
-		endValue, err := time.Parse(DateLayout, *s.EndDate)
+		endValue, err := time.Parse(entity.DateLayout, *s.EndDate)
 		if err != nil {
 			return nil, fmt.Errorf("invalid date format")
 		}

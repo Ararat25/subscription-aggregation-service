@@ -23,7 +23,7 @@ run:
 
 # Запуск unit-тестов локально
 test:
-	go test ./... -v -cover
+	go test -count=1 ./... -v
 
 # Обновление swagger документации
 swagger:

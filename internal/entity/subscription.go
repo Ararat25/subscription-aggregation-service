@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const DateLayout = "01-2006" // шаблон для преобразования дат из строки в объект
+
 // Subscription - структура для храненеия данных подписки
 type Subscription struct {
 	Id          int        `json:"-"`                  // id подписки в бд
@@ -24,4 +26,21 @@ type SubscriptionRequest struct {
 	UserId      uuid.UUID `json:"user_id" example:"550e8400-e29b-41d4-a716-446655440000" validate:"required,uuid4"` // id пользователя в формате UUID
 	StartDate   string    `json:"start_date" example:"08-2025" validate:"required,datetime=01-2006"`                // дата начала подписки (месяц и год)
 	EndDate     *string   `json:"end_date,omitempty" example:"09-2025" validate:"omitempty,datetime=01-2006"`       // дата окончания подписки (месяц и год)
+}
+
+// ParseSubscriptionToRequest парсит *entity.Subscription в *entity.SubscriptionRequest
+func ParseSubscriptionToRequest(sub *Subscription) *SubscriptionRequest {
+	var endDateStr *string
+	if sub.EndDate != nil {
+		s := sub.EndDate.Format(DateLayout)
+		endDateStr = &s
+	}
+	return &SubscriptionRequest{
+		Id:          sub.Id,
+		ServiceName: sub.ServiceName,
+		Price:       sub.Price,
+		UserId:      sub.UserId,
+		StartDate:   sub.StartDate.Format(DateLayout),
+		EndDate:     endDateStr,
+	}
 }
