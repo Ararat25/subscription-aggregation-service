@@ -3,8 +3,9 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"net/http"
+
+	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 )
 
 // UpdateSubscription godoc
@@ -15,8 +16,8 @@ import (
 // @Produce json
 // @Param subscription body entity.SubscriptionRequest true "Данные подписки"
 // @Success 200 {object} StatusResponse "Успешное обновление"
-// @Failure 400 {object} map[string]string "Неверные данные"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
+// @Failure 400 {object} ErrorResponse "Неверные данные"
+// @Failure 500 {object} ErrorResponse "Внутренняя ошибка сервера"
 // @Router /subscription/update [put]
 func (h *Handler) UpdateSubscription(w http.ResponseWriter, r *http.Request) {
 	var buf bytes.Buffer

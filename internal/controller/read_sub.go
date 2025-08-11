@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // ReadSubscription godoc
@@ -13,7 +14,7 @@ import (
 // @Produce json
 // @Param id path int true "ID подписки"
 // @Success 200 {object} entity.Subscription "Информация о подписке"
-// @Failure 400 {object} map[string]string "Неверный параметр id или ошибка получения данных"
+// @Failure 400 {object} ErrorResponse "Неверный параметр id или ошибка получения данных"
 // @Router /subscription/{id} [get]
 func (h *Handler) ReadSubscription(w http.ResponseWriter, r *http.Request) {
 	idString := chi.URLParam(r, "id")

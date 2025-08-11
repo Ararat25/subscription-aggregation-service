@@ -43,29 +43,19 @@ const docTemplate = `{
                     "200": {
                         "description": "ID созданной подписки",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer",
-                                "format": "int64"
-                            }
+                            "$ref": "#/definitions/controller.CreateControllerResponse"
                         }
                     },
                     "400": {
                         "description": "Некорректные данные",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/controller.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/controller.ErrorResponse"
                         }
                     }
                 }
@@ -100,10 +90,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Некорректный ID или ошибка удаления",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/controller.ErrorResponse"
                         }
                     }
                 }
@@ -143,19 +130,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Неверные данные",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/controller.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/controller.ErrorResponse"
                         }
                     }
                 }
@@ -190,10 +171,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Неверный параметр id или ошибка получения данных",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/controller.ErrorResponse"
                         }
                     }
                 }
@@ -222,10 +200,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Ошибка получения данных",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/controller.ErrorResponse"
                         }
                     }
                 }
@@ -273,28 +248,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Общая стоимость",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "integer"
-                            }
+                            "$ref": "#/definitions/controller.TotalCostControllerResponse"
                         }
                     },
                     "400": {
                         "description": "Неверные параметры запроса",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/controller.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/controller.ErrorResponse"
                         }
                     }
                 }
@@ -302,13 +268,43 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controller.CreateControllerResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "id созданной подписки",
+                    "type": "integer",
+                    "example": 15
+                }
+            }
+        },
+        "controller.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "description": "строка для сообщения об ошибке",
+                    "type": "string",
+                    "example": "error message"
+                }
+            }
+        },
         "controller.StatusResponse": {
             "type": "object",
             "properties": {
                 "status": {
                     "description": "статус ответа",
                     "type": "string",
-                    "example": "ok"
+                    "example": "success"
+                }
+            }
+        },
+        "controller.TotalCostControllerResponse": {
+            "type": "object",
+            "properties": {
+                "total_cost": {
+                    "description": "суммарная стоимость подписок",
+                    "type": "integer",
+                    "example": 2000
                 }
             }
         },
@@ -342,27 +338,33 @@ const docTemplate = `{
             "properties": {
                 "end_date": {
                     "description": "дата окончания подписки (месяц и год)",
-                    "type": "string"
+                    "type": "string",
+                    "example": "09-2025"
                 },
                 "id": {
                     "description": "id подписки в бд",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "price": {
                     "description": "стоимость месячной подписки в рублях",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 499
                 },
                 "service_name": {
                     "description": "название сервиса, предоставляющего подписку",
-                    "type": "string"
+                    "type": "string",
+                    "example": "Netflix"
                 },
                 "start_date": {
                     "description": "дата начала подписки (месяц и год)",
-                    "type": "string"
+                    "type": "string",
+                    "example": "08-2025"
                 },
                 "user_id": {
                     "description": "id пользователя в формате UUID",
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 }
             }
         }

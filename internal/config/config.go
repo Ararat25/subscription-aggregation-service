@@ -16,9 +16,11 @@ type Config struct {
 
 // ServerConfig - структура для конфигурации сервера
 type ServerConfig struct {
-	Host    string        `env:"HOST" envDefault:""`      // хост сервера
-	Port    int           `env:"PORT" envDefault:"8080"`  // порт сервера
-	Timeout time.Duration `env:"TIMEOUT" envDefault:"5s"` // таймаут сервера
+	Host    string        `env:"HOST" envDefault:""`                             // хост сервера
+	Port    int           `env:"PORT" envDefault:"8080"`                         // порт сервера
+	Timeout time.Duration `env:"TIMEOUT" envDefault:"5s"`                        // таймаут сервера
+	Logging string        `env:"LOGGING" envDefault:"dev"`                       // формат логирования
+	LogPath string        `env:"SERVER_LOG_FILE_PATH" envDefault:"logs/app.log"` // путь файла для логов
 }
 
 // DatabaseConfig - структура для конфигурации базы данных

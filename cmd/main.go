@@ -9,7 +9,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
+
+	"github.com/Ararat25/subscription-aggregation-service/internal/logger"
+	"go.uber.org/zap"
 
 	_ "github.com/Ararat25/subscription-aggregation-service/docs"
 	"github.com/Ararat25/subscription-aggregation-service/internal/config"
@@ -32,13 +34,28 @@ func main() {
 		log.Fatalf("error init config: %v\n", err)
 	}
 
+	err = logger.Init(conf.Server.Logging, conf.Server.LogPath)
+	if err != nil {
+		log.Fatalf("error init logger: %v\n", err)
+	}
+	defer logger.Sync()
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	handler := initApp(ctx, conf)
+	db := repository.PGRepo{}
+	err = db.ConnectDB(ctx, conf.Database.Host, conf.Database.User, conf.Database.Password, conf.Database.Name, conf.Database.Port)
+	if err != nil {
+		log.Fatalf("error connecting to database: %v\n", err)
+	}
+	defer db.Close(ctx)
+	logger.Log.Info("Successful connection to the database",
+		zap.String("host", conf.Database.Host),
+		zap.Int("port", conf.Database.Port),
+	)
 
+	handler := initApp(&db)
 	router := initRouter(handler)
-
 	runApp(ctx, conf, router)
 }
 
@@ -51,40 +68,31 @@ func runApp(ctx context.Context, conf *config.Config, router *chi.Mux) {
 		Handler: router,
 	}
 
-	log.Printf("Server starting on %s", hostPort)
+	logger.Log.Info("Server starting...", zap.String("addr", hostPort))
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("Server error: %v", err)
+			logger.Log.Error("Server error", zap.Error(err))
 		}
 	}()
 
 	<-ctx.Done()
-	log.Println("Shutting down gracefully...")
+	logger.Log.Info("Shutting down gracefully...")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), conf.Server.Timeout)
 	defer cancel()
 
 	err := server.Shutdown(shutdownCtx)
 	if err != nil {
-		log.Fatalf("Server shutdown error: %v", err)
+		logger.Log.Fatal("Server shutdown error", zap.Error(err))
 	}
 
-	log.Println("Server stopped")
+	logger.Log.Info("Server stopped")
 }
 
-// initApp инициализирует подключение к базе данных и сервисы приложения
-func initApp(ctx context.Context, conf *config.Config) *controller.Handler {
-	db := repository.PGRepo{}
-
-	err := db.ConnectDB(ctx, conf.Database.Host, conf.Database.User, conf.Database.Password, conf.Database.Name, conf.Database.Port)
-	if err != nil {
-		log.Fatalf("error connecting to database: %v\n", err)
-	}
-
-	log.Println("Successful connection to the database")
-
-	authService := model.NewAggregationService(&db)
+// initApp инициализирует сервисы приложения
+func initApp(db repository.Repo) *controller.Handler {
+	authService := model.NewAggregationService(db)
 
 	handler := controller.NewHandler(authService)
 
@@ -94,7 +102,7 @@ func initApp(ctx context.Context, conf *config.Config) *controller.Handler {
 // initRouter настраивает маршруты и middleware для сервера
 func initRouter(handler *controller.Handler) *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
+	r.Use(middle.ZapLogger(logger.Log))
 	r.Use(middleware.Recoverer)
 	r.Use(middle.JsonHeader)
 

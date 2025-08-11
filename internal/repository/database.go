@@ -161,8 +161,6 @@ func (repo *PGRepo) TotalCost(ctx context.Context, from, to time.Time, userID *u
 		}
 	}
 
-	fmt.Println(args)
-
 	err := repo.conn.QueryRow(ctx, query, args...).Scan(&total)
 	return total, err
 }

@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 // DeleteSubscription godoc
@@ -13,7 +14,7 @@ import (
 // @Produce json
 // @Param id path int true "ID подписки"
 // @Success 200 {object} StatusResponse "Статус выполнения"
-// @Failure 400 {object} map[string]string "Некорректный ID или ошибка удаления"
+// @Failure 400 {object} ErrorResponse "Некорректный ID или ошибка удаления"
 // @Router /subscription/delete/{id} [delete]
 func (h *Handler) DeleteSubscription(w http.ResponseWriter, r *http.Request) {
 	idString := chi.URLParam(r, "id")

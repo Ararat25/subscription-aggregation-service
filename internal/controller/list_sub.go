@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 )
 
@@ -11,7 +10,7 @@ import (
 // @Tags subscriptions
 // @Produce json
 // @Success 200 {array} entity.Subscription "Список подписок"
-// @Failure 500 {object} map[string]string "Ошибка получения данных"
+// @Failure 500 {object} ErrorResponse "Ошибка получения данных"
 // @Router /subscriptions [get]
 func (h *Handler) ListSubscriptions(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -20,8 +19,6 @@ func (h *Handler) ListSubscriptions(w http.ResponseWriter, r *http.Request) {
 		sendError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	fmt.Println(subs)
 
 	sendSuccess(w, subs, http.StatusOK)
 }

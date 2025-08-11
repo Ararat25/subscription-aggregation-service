@@ -2,8 +2,10 @@ package controller
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+
+	"github.com/Ararat25/subscription-aggregation-service/internal/logger"
+	"go.uber.org/zap"
 )
 
 // ErrorResponse описывает структуру ответа с ошибкой
@@ -13,7 +15,7 @@ type ErrorResponse struct {
 
 // StatusResponse описывает структуру ответа со статусом
 type StatusResponse struct {
-	Status string `json:"status" example:"ok"` // статус ответа
+	Status string `json:"status" example:"success"` // статус ответа
 }
 
 // sendSuccess отправляет успешный JSON-ответ с указанным статусом
@@ -21,14 +23,14 @@ func sendSuccess(w http.ResponseWriter, data any, statusCode int) {
 	if data != nil {
 		respBytes, err := json.Marshal(data)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			sendError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		_, err = w.Write(respBytes)
 		if err != nil {
-			log.Println(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			logger.Log.Error("error writing response", zap.Error(err))
+			sendError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -44,7 +46,7 @@ func sendError(w http.ResponseWriter, errMsg string, statusCode int) {
 
 	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
-		log.Println("error encoding response:", err)
+		logger.Log.Error("error encoding response", zap.Error(err))
 		http.Error(w, errMsg, statusCode)
 	}
 }

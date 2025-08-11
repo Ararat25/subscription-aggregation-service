@@ -1,11 +1,32 @@
 basePath: /api/v1
 definitions:
+  controller.CreateControllerResponse:
+    properties:
+      id:
+        description: id созданной подписки
+        example: 15
+        type: integer
+    type: object
+  controller.ErrorResponse:
+    properties:
+      error:
+        description: строка для сообщения об ошибке
+        example: error message
+        type: string
+    type: object
   controller.StatusResponse:
     properties:
       status:
         description: статус ответа
-        example: ok
+        example: success
         type: string
+    type: object
+  controller.TotalCostControllerResponse:
+    properties:
+      total_cost:
+        description: суммарная стоимость подписок
+        example: 2000
+        type: integer
     type: object
   entity.Subscription:
     properties:
@@ -29,21 +50,27 @@ definitions:
     properties:
       end_date:
         description: дата окончания подписки (месяц и год)
+        example: 09-2025
         type: string
       id:
         description: id подписки в бд
+        example: 1
         type: integer
       price:
         description: стоимость месячной подписки в рублях
+        example: 499
         type: integer
       service_name:
         description: название сервиса, предоставляющего подписку
+        example: Netflix
         type: string
       start_date:
         description: дата начала подписки (месяц и год)
+        example: 08-2025
         type: string
       user_id:
         description: id пользователя в формате UUID
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
     type: object
 info:
@@ -70,22 +97,15 @@ paths:
         "200":
           description: ID созданной подписки
           schema:
-            additionalProperties:
-              format: int64
-              type: integer
-            type: object
+            $ref: '#/definitions/controller.CreateControllerResponse'
         "400":
           description: Некорректные данные
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/controller.ErrorResponse'
         "500":
           description: Внутренняя ошибка сервера
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/controller.ErrorResponse'
       summary: Создать новую подписку
       tags:
       - subscriptions
@@ -108,9 +128,7 @@ paths:
         "400":
           description: Неверный параметр id или ошибка получения данных
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/controller.ErrorResponse'
       summary: Получить подписку по ID
       tags:
       - subscriptions
@@ -133,9 +151,7 @@ paths:
         "400":
           description: Некорректный ID или ошибка удаления
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/controller.ErrorResponse'
       summary: Удалить подписку
       tags:
       - subscriptions
@@ -161,15 +177,11 @@ paths:
         "400":
           description: Неверные данные
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/controller.ErrorResponse'
         "500":
           description: Внутренняя ошибка сервера
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/controller.ErrorResponse'
       summary: Обновить подписку
       tags:
       - subscriptions
@@ -188,9 +200,7 @@ paths:
         "500":
           description: Ошибка получения данных
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/controller.ErrorResponse'
       summary: Получить список подписок
       tags:
       - subscriptions
@@ -223,21 +233,15 @@ paths:
         "200":
           description: Общая стоимость
           schema:
-            additionalProperties:
-              type: integer
-            type: object
+            $ref: '#/definitions/controller.TotalCostControllerResponse'
         "400":
           description: Неверные параметры запроса
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/controller.ErrorResponse'
         "500":
           description: Внутренняя ошибка сервера
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/controller.ErrorResponse'
       summary: Получить общую стоимость подписок
       tags:
       - subscriptions
