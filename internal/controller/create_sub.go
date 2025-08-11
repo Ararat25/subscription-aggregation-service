@@ -39,6 +39,12 @@ func (h *Handler) CreateSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = validate.Struct(newSub)
+	if err != nil {
+		sendError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	ctx := r.Context()
 	id, err := h.aggregationService.CreateSubscription(ctx, newSub)
 	if err != nil {

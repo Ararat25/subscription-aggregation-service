@@ -41,6 +41,7 @@ func (h *Handler) TotalCost(w http.ResponseWriter, r *http.Request) {
 		sendError(w, "invalid from parameter", http.StatusBadRequest)
 		return
 	}
+
 	to, err := time.Parse(model.DateLayout, toStr)
 	if err != nil {
 		sendError(w, "invalid to parameter", http.StatusBadRequest)

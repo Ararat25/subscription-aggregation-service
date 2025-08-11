@@ -10,18 +10,17 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Ararat25/subscription-aggregation-service/internal/logger"
-	"go.uber.org/zap"
-
 	_ "github.com/Ararat25/subscription-aggregation-service/docs"
 	"github.com/Ararat25/subscription-aggregation-service/internal/config"
 	"github.com/Ararat25/subscription-aggregation-service/internal/controller"
+	"github.com/Ararat25/subscription-aggregation-service/internal/logger"
 	middle "github.com/Ararat25/subscription-aggregation-service/internal/middleware"
 	"github.com/Ararat25/subscription-aggregation-service/internal/model"
 	"github.com/Ararat25/subscription-aggregation-service/internal/repository"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"go.uber.org/zap"
 )
 
 // @title Subscription aggregation service API
@@ -106,7 +105,7 @@ func initRouter(handler *controller.Handler) *chi.Mux {
 	r.Use(middleware.Recoverer)
 	r.Use(middle.JsonHeader)
 
-	r.Get("/api/v1/docs/*", httpSwagger.WrapHandler)
+	r.Get("/api/v1/doc/*", httpSwagger.WrapHandler)
 	r.Post("/api/v1/subscription", handler.CreateSubscription)
 	r.Get("/api/v1/subscription/{id}", handler.ReadSubscription)
 	r.Put("/api/v1/subscription/update", handler.UpdateSubscription)

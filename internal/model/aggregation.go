@@ -35,6 +35,10 @@ func (ags *AggregationService) CreateSubscription(ctx context.Context, s *entity
 		return 0, err
 	}
 
+	if !isEndDateValid(subNew.StartDate, *subNew.EndDate) {
+		return 0, fmt.Errorf("end_date must be >= start_date")
+	}
+
 	id, err := ags.Storage.CreateSubscription(ctx, subNew)
 	if err != nil {
 		return 0, err
@@ -62,6 +66,10 @@ func (ags *AggregationService) UpdateSubscription(ctx context.Context, s *entity
 	subNew, err := convertStringDateToTime(s)
 	if err != nil {
 		return err
+	}
+
+	if !isEndDateValid(subNew.StartDate, *subNew.EndDate) {
+		return fmt.Errorf("end_date must be >= start_date")
 	}
 
 	err = ags.Storage.UpdateSubscription(ctx, subNew)
@@ -94,7 +102,14 @@ func (ags *AggregationService) ListSubscriptions(ctx context.Context) ([]*entity
 
 // TotalCost возвращает суммарную стоимость подписок за определенный период с фильтрацией по id пользователя и названию сервиса
 func (ags *AggregationService) TotalCost(ctx context.Context, from, to time.Time, userID *uuid.UUID, serviceName *string) (int, error) {
-	cost, err := ags.Storage.TotalCost(ctx, resetDay(from), resetDay(to), userID, serviceName)
+	fromReset := resetDay(from)
+	toReset := resetDay(to)
+
+	if !isEndDateValid(fromReset, toReset) {
+		return 0, fmt.Errorf("to must be >= from")
+	}
+
+	cost, err := ags.Storage.TotalCost(ctx, fromReset, toReset, userID, serviceName)
 	if err != nil {
 		return 0, err
 	}
@@ -138,4 +153,9 @@ func convertStringDateToTime(s *entity.SubscriptionRequest) (*entity.Subscriptio
 	subNew.EndDate = end
 
 	return subNew, nil
+}
+
+// isEndDateValid проверяет, что endDate >= startDate
+func isEndDateValid(startDate, endDate time.Time) bool {
+	return !endDate.Before(startDate)
 }

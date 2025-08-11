@@ -2,7 +2,10 @@ package controller
 
 import (
 	"github.com/Ararat25/subscription-aggregation-service/internal/model"
+	"github.com/go-playground/validator/v10"
 )
+
+var validate = validator.New()
 
 // Handler структура для обработчиков запросов
 type Handler struct {

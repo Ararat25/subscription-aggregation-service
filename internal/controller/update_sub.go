@@ -3,9 +3,11 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
+	myError "github.com/Ararat25/subscription-aggregation-service/internal/error"
 )
 
 // UpdateSubscription godoc
@@ -34,8 +36,18 @@ func (h *Handler) UpdateSubscription(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = validate.Struct(newSub)
+	if err != nil {
+		sendError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	ctx := r.Context()
 	err = h.aggregationService.UpdateSubscription(ctx, newSub)
+	if errors.Is(err, myError.ErrSubscriptionNotFound) {
+		sendError(w, err.Error(), http.StatusNotFound)
+		return
+	}
 	if err != nil {
 		sendError(w, err.Error(), http.StatusBadRequest)
 		return

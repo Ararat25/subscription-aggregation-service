@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
+
+	myError "github.com/Ararat25/subscription-aggregation-service/internal/error"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -32,6 +35,10 @@ func (h *Handler) ReadSubscription(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	subscription, err := h.aggregationService.ReadSubscription(ctx, id)
+	if errors.Is(err, myError.ErrSubscriptionNotFound) {
+		sendError(w, err.Error(), http.StatusNotFound)
+		return
+	}
 	if err != nil {
 		sendError(w, err.Error(), http.StatusBadRequest)
 		return

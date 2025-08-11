@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
+	myError "github.com/Ararat25/subscription-aggregation-service/internal/error"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -65,7 +66,7 @@ func (repo *PGRepo) ReadSubscription(ctx context.Context, id int64) (*entity.Sub
 	err := row.Scan(&s.Id, &s.ServiceName, &s.Price, &s.UserId, &s.StartDate, &s.EndDate)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("subscription with id %d not found", id)
+			return nil, myError.ErrSubscriptionNotFound
 		}
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func (repo *PGRepo) UpdateSubscription(ctx context.Context, s *entity.Subscripti
 	}
 
 	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf("no subscription found with id %d", s.Id)
+		return myError.ErrSubscriptionNotFound
 	}
 
 	return nil
@@ -107,7 +108,7 @@ func (repo *PGRepo) DeleteSubscription(ctx context.Context, id int64) error {
 	}
 
 	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf("subscription with id %d not found", id)
+		return myError.ErrSubscriptionNotFound
 	}
 
 	return nil
@@ -140,8 +141,8 @@ func (repo *PGRepo) TotalCost(ctx context.Context, from, to time.Time, userID *u
 	query := `
 		SELECT COALESCE(SUM(price), 0)
 		FROM subscriptions
-		WHERE (($1 BETWEEN start_date AND end_date)
-		OR ($2 BETWEEN start_date AND end_date)
+		WHERE (($1 BETWEEN start_date AND COALESCE(end_date, CURRENT_DATE))
+		OR ($2 BETWEEN start_date AND COALESCE(end_date, CURRENT_DATE))
 		OR ($1 = start_date OR $2 = start_date))
 	`
 	args := []interface{}{from, to}
