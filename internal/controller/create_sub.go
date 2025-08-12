@@ -3,9 +3,11 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
+	myError "github.com/Ararat25/subscription-aggregation-service/internal/error"
 )
 
 // CreateControllerResponse - структура для ответа от контроллера CreateSubscription
@@ -47,6 +49,10 @@ func (h *Handler) CreateSubscription(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	id, err := h.aggregationService.CreateSubscription(ctx, newSub)
+	if errors.Is(err, myError.ErrDateRange) {
+		sendError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	if err != nil {
 		sendError(w, err.Error(), http.StatusInternalServerError)
 		return

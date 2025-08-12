@@ -2,12 +2,11 @@ package controller
 
 import (
 	"errors"
-	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"net/http"
 	"strconv"
 
+	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	myError "github.com/Ararat25/subscription-aggregation-service/internal/error"
-
 	"github.com/go-chi/chi/v5"
 )
 

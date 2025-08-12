@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"github.com/google/uuid"
 )
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
+	myError "github.com/Ararat25/subscription-aggregation-service/internal/error"
 	"github.com/Ararat25/subscription-aggregation-service/internal/repository"
 	"github.com/google/uuid"
 )
@@ -34,7 +35,7 @@ func (ags *AggregationService) CreateSubscription(ctx context.Context, s *entity
 	}
 
 	if subNew.EndDate != nil && !isEndDateValid(subNew.StartDate, *subNew.EndDate) {
-		return 0, fmt.Errorf("end_date must be >= start_date")
+		return 0, myError.ErrDateRange
 	}
 
 	id, err := ags.Storage.CreateSubscription(ctx, subNew)
@@ -67,7 +68,7 @@ func (ags *AggregationService) UpdateSubscription(ctx context.Context, s *entity
 	}
 
 	if subNew.EndDate != nil && !isEndDateValid(subNew.StartDate, *subNew.EndDate) {
-		return fmt.Errorf("end_date must be >= start_date")
+		return myError.ErrDateRange
 	}
 
 	err = ags.Storage.UpdateSubscription(ctx, subNew)

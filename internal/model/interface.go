@@ -2,9 +2,10 @@ package model
 
 import (
 	"context"
+	"time"
+
 	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"github.com/google/uuid"
-	"time"
 )
 
 // Service интерфейс для сервиса агрегации

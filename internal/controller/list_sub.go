@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"net/http"
+
+	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 )
 
 // ListSubscriptions godoc

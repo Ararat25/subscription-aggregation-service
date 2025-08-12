@@ -34,7 +34,7 @@ type DatabaseConfig struct {
 
 // Init получает данные из переменных окружения и возвращает объект Config
 func Init() (*Config, error) {
-	err := godotenv.Load()
+	err := godotenv.Overload()
 	if err != nil {
 		return nil, fmt.Errorf("error loading env variables: %w\n", err)
 	}

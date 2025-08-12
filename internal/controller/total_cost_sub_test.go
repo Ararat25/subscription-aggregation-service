@@ -3,13 +3,13 @@ package controller
 import (
 	"encoding/json"
 	"errors"
-	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 	"time"
 
+	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

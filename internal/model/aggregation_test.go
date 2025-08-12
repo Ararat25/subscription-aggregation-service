@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Ararat25/subscription-aggregation-service/internal/entity"
+	myError "github.com/Ararat25/subscription-aggregation-service/internal/error"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -128,7 +129,7 @@ func TestCreateSubscription(t *testing.T) {
 	id, err = service.CreateSubscription(ctx, subReqInvalidEndDate)
 	assert.Error(t, err)
 	assert.Equal(t, int64(0), id)
-	assert.Contains(t, err.Error(), "end_date must be >= start_date")
+	assert.Contains(t, err.Error(), myError.ErrDateRange.Error())
 
 	// Тестовый пример 5: Ошибка репозитория
 	subReqRepoError := &entity.SubscriptionRequest{
@@ -236,7 +237,7 @@ func TestUpdateSubscription(t *testing.T) {
 	}
 	err = service.UpdateSubscription(ctx, subReqInvalidEndDate)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "end_date must be >= start_date")
+	assert.Contains(t, err.Error(), myError.ErrDateRange.Error())
 
 	// Тестовый пример 5: Ошибка репозитория
 	subReqRepoError := &entity.SubscriptionRequest{
